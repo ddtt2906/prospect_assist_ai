@@ -1,92 +1,153 @@
-import React, { useEffect, useState } from 'react';
-import { Joyride, STATUS } from 'react-joyride';
-import { useLocation, useNavigate } from 'react-router-dom';
+/**
+ * GlobalTour — LAKSHYA
+ * Custom tour, zero library dependencies.
+ */
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDemo } from '../../context/DemoContext';
+import { X, ArrowRight, ArrowLeft, SkipForward } from 'lucide-react';
 
-const steps = [
-  { target: '#tour-welcome', content: 'Welcome to LAKSHYA. This walkthrough shows how a customer’s digital behaviour becomes an explainable and actionable retail-lending lead.', placement: 'bottom', disableBeacon: true },
-  { target: '#tour-persona-picker', content: 'Start with Riya, a freelancer seeking an auto loan. Her income is irregular, but her borrowing intent is genuine.', placement: 'top' },
-  { target: '#tour-run-behaviour', content: 'Play Riya’s journey to generate actual frontend events such as calculator use, document-page viewing and application abandonment.', placement: 'bottom', route: '/customer-simulator' },
-  { target: '#tour-event-stream', content: 'Every digital action is converted into a structured event. These events are used to distinguish serious intent from casual browsing.', placement: 'left' },
-  { target: '#tour-connectors', content: 'LAKSHYA combines clickstream events with synthetic bank, Account Aggregator and credit-profile data.', placement: 'bottom', route: '/data-capture' },
-  { target: '#tour-consent', content: 'The customer controls which financial information is shared. Only the data required for repayment-capacity assessment is requested.', placement: 'center' }, // Modal requires manual trigger in a real app, but we will just point to the button or center for now
-  { target: '#tour-transaction-classification', content: 'Genuine earnings are separated from refunds, internal transfers and loan proceeds. This prevents the system from overstating income.', placement: 'bottom', route: '/transaction-intelligence' },
-  { target: '#tour-feature-store', content: 'The models receive structured, inspectable features rather than an unverified raw statement or an LLM opinion.', placement: 'top' },
-  { target: '#tour-run-agents', content: 'Start the governed agent workflow. Each agent has a specific role, controlled inputs, a tool and a structured output contract.', placement: 'left', route: '/agent-console' },
-  { target: '#tour-agent-trace', content: 'Inspect each agent’s input, tool, output JSON, confidence, latency and reason codes.', placement: 'bottom' },
-  { target: '#tour-decision', content: 'LAKSHYA separates borrowing intent, safe affordability and conversion uplift before creating a lead.', placement: 'bottom', route: '/lead-decision' },
-  { target: '#tour-rm-brief', content: 'The relationship manager receives a conversation-ready lead dossier rather than another unexplained score.', placement: 'right', route: '/rm-workbench' },
-  { target: '#tour-ai-lab', content: 'Use Demo AI immediately, or optionally connect a personal Groq test key for live multilingual explanations.', placement: 'left', route: '/ai-lab' },
-  { target: '#tour-feedback', content: 'Conversion and underwriting outcomes are captured as future learning labels.', placement: 'bottom', route: '/feedback-loop' },
-  { target: '#tour-architecture', content: 'This frontend simulates the complete pipeline. The production architecture would replace local services with secure bank APIs, event streaming, feature stores and governed model services.', placement: 'right', route: '/architecture' }
+const STEPS = [
+  { target: '#tour-welcome',                  placement: 'bottom', title: '👋 Welcome to LAKSHYA',             content: "This walkthrough shows how a customer's digital behaviour becomes an explainable and actionable retail-lending lead.", route: '/' },
+  { target: '#tour-persona-picker',           placement: 'top',    title: '👤 Choose a Customer Persona',      content: 'Start with Riya, a freelancer seeking an auto loan. Her income is irregular, but her borrowing intent is genuine.',   route: '/customer-simulator' },
+  { target: '#tour-run-behaviour',            placement: 'bottom', title: '▶️ Simulate Customer Journey',       content: "Play Riya's journey to generate actual frontend events: calculator use, document viewing, and application abandonment.", route: '/customer-simulator' },
+  { target: '#tour-event-stream',             placement: 'left',   title: '📡 Live Event Stream',               content: 'Every digital action is converted into a structured event. These distinguish serious intent from casual browsing.',     route: '/customer-simulator' },
+  { target: '#tour-connectors',               placement: 'bottom', title: '🔗 Data Connectors',                 content: 'LAKSHYA combines clickstream events with synthetic bank, Account Aggregator, and credit-profile data.',               route: '/data-capture' },
+  { target: '#tour-consent',                  placement: 'bottom', title: '🔐 Consent Management',              content: 'The customer controls which financial information is shared. Only repayment-capacity data is requested.',               route: '/data-capture' },
+  { target: '#tour-transaction-classification', placement: 'bottom', title: '📊 Transaction Intelligence',      content: 'Genuine earnings are separated from refunds, internal transfers, and loan proceeds — preventing income overstatement.', route: '/transaction-intelligence' },
+  { target: '#tour-feature-store',            placement: 'top',    title: '🗄️ Feature Store',                   content: 'Models receive structured, inspectable features rather than raw statements or LLM opinions.',                          route: '/transaction-intelligence' },
+  { target: '#tour-run-agents',               placement: 'left',   title: '🤖 Agent Workflow',                  content: 'Start the governed agent workflow. Each agent has a specific role, controlled inputs, and a structured output contract.', route: '/agent-console' },
+  { target: '#tour-agent-trace',              placement: 'bottom', title: '🔍 Agent Trace',                     content: 'Inspect each agent\'s input, tool, output JSON, confidence, latency and reason codes.',                               route: '/agent-console' },
+  { target: '#tour-decision',                 placement: 'bottom', title: '⚖️ Lead Decision',                   content: 'LAKSHYA separates borrowing intent, safe affordability and conversion uplift before creating a lead.',                  route: '/lead-decision' },
+  { target: '#tour-rm-brief',                 placement: 'right',  title: '💼 RM Workbench',                    content: 'The relationship manager receives a conversation-ready lead dossier rather than another unexplained score.',           route: '/rm-workbench' },
+  { target: '#tour-ai-lab',                   placement: 'left',   title: '🧪 AI Lab',                          content: 'Use Demo AI immediately, or connect a personal Groq key for live multilingual explanations.',                         route: '/ai-lab' },
+  { target: '#tour-feedback',                 placement: 'bottom', title: '🔄 Feedback Loop',                   content: 'Conversion and underwriting outcomes are captured as future learning labels.',                                         route: '/feedback-loop' },
+  { target: '#tour-architecture',             placement: 'right',  title: '🏗️ Architecture',                    content: 'This frontend simulates the complete pipeline. Production replaces local services with secure bank APIs and event streaming.', route: '/architecture' },
 ];
+
+function getTooltipPosition(targetEl, placement, tooltipEl) {
+  if (!targetEl) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+  const rect = targetEl.getBoundingClientRect();
+  const tw = tooltipEl?.offsetWidth || 340;
+  const th = tooltipEl?.offsetHeight || 180;
+  const gap = 16;
+  let top, left;
+  switch (placement) {
+    case 'bottom': top = rect.bottom + gap; left = rect.left + rect.width / 2 - tw / 2; break;
+    case 'top':    top = rect.top - th - gap; left = rect.left + rect.width / 2 - tw / 2; break;
+    case 'left':   top = rect.top + rect.height / 2 - th / 2; left = rect.left - tw - gap; break;
+    case 'right':  top = rect.top + rect.height / 2 - th / 2; left = rect.right + gap; break;
+    default:       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+  }
+  top  = Math.max(8, Math.min(top,  window.innerHeight - th - 8));
+  left = Math.max(8, Math.min(left, window.innerWidth  - tw - 8));
+  return { top: `${top}px`, left: `${left}px` };
+}
 
 export default function GlobalTour() {
   const { state, dispatch } = useDemo();
   const navigate = useNavigate();
   const location = useLocation();
-  const [run, setRun] = useState(false);
+
+  const [stepIndex, setStepIndex] = useState(0);
+  const [targetRect, setTargetRect] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({});
+  const tooltipRef = useRef(null);
+  const pendingStep = useRef(null);
+
+  const step = STEPS[stepIndex];
+  const isRunning = state.tourRunning;
 
   useEffect(() => {
-    // Initial load auto-start if not done in session
-    if (!sessionStorage.getItem('lakshya_tour_done') && !state.tourState.run) {
-      const timer = setTimeout(() => {
-        dispatch({ type: 'UPDATE_TOUR', payload: { run: true, stepIndex: 0 } });
-      }, 1200);
-      return () => clearTimeout(timer);
+    if (pendingStep.current !== null) {
+      const idx = pendingStep.current;
+      pendingStep.current = null;
+      setTimeout(() => setStepIndex(idx), 500);
     }
-  }, [dispatch, state.tourState.run]);
+    const flag = sessionStorage.getItem('lakshya-start-tour');
+    if (flag === 'true') {
+      sessionStorage.removeItem('lakshya-start-tour');
+      setTimeout(() => {
+        dispatch({ type: 'SET_TOUR_STATE', payload: { run: true, stepIndex: 0 } });
+        setStepIndex(0);
+      }, 400);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
-    setRun(state.tourState.run);
-  }, [state.tourState.run]);
+    if (!isRunning || !step) return;
+    const update = () => {
+      const el = step.target ? document.querySelector(step.target) : null;
+      setTargetRect(el ? el.getBoundingClientRect() : null);
+      setTooltipPos(getTooltipPosition(el, step.placement, tooltipRef.current));
+    };
+    update();
+    const interval = setInterval(update, 200);
+    return () => clearInterval(interval);
+  }, [isRunning, stepIndex, step]);
 
-  const handleJoyrideCallback = (data) => {
-    const { action, index, status, type } = data;
+  useEffect(() => {
+    if (isRunning) setStepIndex(state.tourStepIndex ?? 0);
+  }, [state.tourRunning]);
 
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-      dispatch({ type: 'UPDATE_TOUR', payload: { run: false, stepIndex: 0 } });
-      sessionStorage.setItem('lakshya_tour_done', 'true');
-      return;
-    }
-
-    if (type === 'step:after' || type === 'target:notFound') {
-      const nextStepIndex = index + (action === 'prev' ? -1 : 1);
-      
-      if (nextStepIndex < steps.length && nextStepIndex >= 0) {
-        const nextStep = steps[nextStepIndex];
-        
-        if (nextStep) {
-          if (nextStep.route && nextStep.route !== location.pathname) {
-            navigate(nextStep.route);
-          }
-          dispatch({ type: 'UPDATE_TOUR', payload: { stepIndex: nextStepIndex } });
-        }
-      }
+  const goTo = (idx) => {
+    if (idx < 0 || idx >= STEPS.length) return endTour();
+    const next = STEPS[idx];
+    const nextRoute = next.route?.split('?')[0];
+    dispatch({ type: 'SET_TOUR_STATE', payload: { run: true, stepIndex: idx } });
+    if (nextRoute && nextRoute !== location.pathname) {
+      pendingStep.current = idx;
+      navigate(nextRoute);
+    } else {
+      setStepIndex(idx);
     }
   };
 
+  const endTour = () => {
+    dispatch({ type: 'SET_TOUR_STATE', payload: { run: false, stepIndex: 0 } });
+    localStorage.setItem('lakshya-tour-completed', 'true');
+  };
+
+  if (!isRunning || !step) return null;
+
+  const isCenter = !step.target || step.placement === 'center';
+  const isFirst = stepIndex === 0;
+  const isLast = stepIndex === STEPS.length - 1;
+
   return (
-    <Joyride
-      steps={steps}
-      run={run}
-      stepIndex={state.tourState.stepIndex}
-      continuous
-      scrollToFirstStep
-      showProgress
-      showSkipButton
-      callback={handleJoyrideCallback}
-      styles={{
-        options: {
-          primaryColor: 'var(--idbi-orange)',
-          textColor: 'var(--text-primary)',
-          backgroundColor: 'var(--surface)',
-          overlayColor: 'rgba(23, 52, 46, 0.4)',
-        },
-        buttonNext: { borderRadius: '6px', fontWeight: 600 },
-        buttonBack: { color: 'var(--text-secondary)' },
-        buttonSkip: { color: 'var(--text-secondary)' }
-      }}
-    />
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.55)', pointerEvents: isCenter ? 'auto' : 'none' }} />
+      {targetRect && !isCenter && (
+        <div style={{ position: 'fixed', top: targetRect.top - 6, left: targetRect.left - 6, width: targetRect.width + 12, height: targetRect.height + 12, zIndex: 9999, borderRadius: 8, boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)', pointerEvents: 'none', border: '2px solid #1a6eb0' }} />
+      )}
+      <div ref={tooltipRef} style={{ position: 'fixed', zIndex: 10000, width: 340, background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.25)', padding: '24px', fontFamily: 'inherit', ...tooltipPos }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#0f1923', lineHeight: 1.4, flex: 1 }}>{step.title}</div>
+          <button onClick={endTour} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#666', marginLeft: 8 }}><X size={16} /></button>
+        </div>
+        <p style={{ fontSize: 13.5, color: '#3a4a5c', lineHeight: 1.6, margin: '0 0 20px 0' }}>{step.content}</p>
+        <div style={{ display: 'flex', gap: 5, marginBottom: 16 }}>
+          {STEPS.map((_, i) => (
+            <div key={i} style={{ width: i === stepIndex ? 18 : 6, height: 6, borderRadius: 3, background: i === stepIndex ? '#1a6eb0' : i < stepIndex ? '#6b8fa8' : '#dce8f0', transition: 'all 0.3s ease' }} />
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button onClick={endTour} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#666', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <SkipForward size={13} /> Skip Tour
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {!isFirst && (
+              <button onClick={() => goTo(stepIndex - 1)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #ccd6e0', background: '#fff', color: '#0f1923', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                <ArrowLeft size={14} /> Back
+              </button>
+            )}
+            <button onClick={() => isLast ? endTour() : goTo(stepIndex + 1)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, border: 'none', background: '#1a6eb0', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              {isLast ? 'Finish ✓' : <><span>Next</span><ArrowRight size={14} /></>}
+            </button>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 11, color: '#888', marginTop: 12 }}>Step {stepIndex + 1} of {STEPS.length}</div>
+      </div>
+    </>
   );
 }
