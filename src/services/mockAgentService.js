@@ -5,7 +5,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const mockAgentService = {
   runIntentAgent: async (events, expectedDecision) => {
-    await sleep(800);
+    await sleep(100);
     // Use surrogate score, but optionally merge with expected decision for demo smoothness
     const result = calculateIntentScore(events);
     return {
@@ -19,7 +19,7 @@ export const mockAgentService = {
   },
 
   runIncomeAgent: async (transactions, expectedDecision) => {
-    await sleep(1100);
+    await sleep(100);
     const features = engineerFeatures(transactions, 40000, 8500); // hardcoded mock inputs for the standalone agent if needed
     return {
       sustainableIncome: expectedDecision.sustainableIncome,
@@ -33,7 +33,7 @@ export const mockAgentService = {
   },
 
   runCapacityAgent: async (features, expectedDecision) => {
-    await sleep(950);
+    await sleep(100);
     return {
       stressSafeEmi: expectedDecision.stressSafeEmi,
       recommendedAmount: expectedDecision.recommendedAmount,
@@ -44,7 +44,7 @@ export const mockAgentService = {
   },
 
   runEligibilityAgent: async (capacityOutputs, expectedDecision) => {
-    await sleep(600);
+    await sleep(100);
     return {
       status: expectedDecision.eligibilityStatus,
       warnings: expectedDecision.barrier ? [expectedDecision.barrier] : [],
@@ -54,7 +54,7 @@ export const mockAgentService = {
   },
 
   runNextBestActionAgent: async (intent, capacity, expectedDecision) => {
-    await sleep(1200);
+    await sleep(100);
     return {
       recommendedAction: expectedDecision.recommendedAction,
       conversionWithoutAction: expectedDecision.conversionWithoutAction,

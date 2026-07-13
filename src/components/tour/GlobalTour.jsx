@@ -56,7 +56,7 @@ export default function GlobalTour() {
   const pendingStep = useRef(null);
 
   const step = STEPS[stepIndex];
-  const isRunning = state.tourRunning;
+  const isRunning = state.tourState?.run;
 
   useEffect(() => {
     if (pendingStep.current !== null) {
@@ -68,7 +68,7 @@ export default function GlobalTour() {
     if (flag === 'true') {
       sessionStorage.removeItem('lakshya-start-tour');
       setTimeout(() => {
-        dispatch({ type: 'SET_TOUR_STATE', payload: { run: true, stepIndex: 0 } });
+        dispatch({ type: 'UPDATE_TOUR', payload: { run: true, stepIndex: 0 } });
         setStepIndex(0);
       }, 400);
     }
@@ -87,14 +87,14 @@ export default function GlobalTour() {
   }, [isRunning, stepIndex, step]);
 
   useEffect(() => {
-    if (isRunning) setStepIndex(state.tourStepIndex ?? 0);
-  }, [state.tourRunning]);
+    if (isRunning) setStepIndex(state.tourState?.stepIndex ?? 0);
+  }, [state.tourState?.run, state.tourState?.stepIndex]);
 
   const goTo = (idx) => {
     if (idx < 0 || idx >= STEPS.length) return endTour();
     const next = STEPS[idx];
     const nextRoute = next.route?.split('?')[0];
-    dispatch({ type: 'SET_TOUR_STATE', payload: { run: true, stepIndex: idx } });
+    dispatch({ type: 'UPDATE_TOUR', payload: { run: true, stepIndex: idx } });
     if (nextRoute && nextRoute !== location.pathname) {
       pendingStep.current = idx;
       navigate(nextRoute);
@@ -104,7 +104,7 @@ export default function GlobalTour() {
   };
 
   const endTour = () => {
-    dispatch({ type: 'SET_TOUR_STATE', payload: { run: false, stepIndex: 0 } });
+    dispatch({ type: 'UPDATE_TOUR', payload: { run: false, stepIndex: 0 } });
     localStorage.setItem('lakshya-tour-completed', 'true');
   };
 
