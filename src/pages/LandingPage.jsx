@@ -57,47 +57,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Product Cards */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-        {[
-          { icon: Activity, title: 'Behavioural Signal Capture', color: 'var(--idbi-teal)' },
-          { icon: Database, title: 'Actual Income Reconstruction', color: 'var(--idbi-orange)' },
-          { icon: LineChart, title: 'Repayment Capacity Simulation', color: 'var(--info)' },
-          { icon: Target, title: 'Causal Next-Best Action', color: 'var(--success)' }
-        ].map((card, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i, duration: 0.5 }}
-            style={{
-              backgroundColor: 'var(--surface)', padding: '24px', borderRadius: '12px',
-              border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
-              display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start'
-            }}>
-            <div style={{ padding: '12px', backgroundColor: 'var(--surface-muted)', borderRadius: '8px', color: card.color }}>
-              <card.icon size={24} />
-            </div>
-            <h3 style={{ fontSize: '16px', margin: 0 }}>{card.title}</h3>
-          </motion.div>
-        ))}
-      </section>
-
-      {/* Statistics */}
-      <section style={{ 
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', 
-        backgroundColor: 'var(--border)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' 
-      }}>
-        {[
-          { icon: Bot, stat: '6', label: 'Specialised Agents' },
-          { icon: Server, stat: '4', label: 'Simulated Data Sources' },
-          { icon: FileDigit, stat: '12', label: 'Months Financial History' },
-          { icon: Cpu, stat: '1', label: 'End-to-End Explainable Trace' }
-        ].map((item, i) => (
-          <div key={i} style={{ backgroundColor: 'var(--surface)', padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-            <item.icon size={24} style={{ color: 'var(--text-muted)' }} />
-            <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--idbi-teal-dark)' }}>{item.stat}</div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.label}</div>
-          </div>
-        ))}
-      </section>
-
       {/* Demo Customers */}
       <section id="tour-persona-picker">
         <h2 style={{ fontSize: '20px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -144,6 +103,48 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      
+      {/* Product Cards */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+        {[
+          { icon: Activity, title: 'Behavioural Signal Capture', color: 'var(--idbi-teal)' },
+          { icon: Database, title: 'Actual Income Reconstruction', color: 'var(--idbi-orange)' },
+          { icon: LineChart, title: 'Repayment Capacity Simulation', color: 'var(--info)' },
+          { icon: Target, title: 'Causal Next-Best Action', color: 'var(--success)' }
+        ].map((card, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i, duration: 0.5 }}
+            style={{
+              backgroundColor: 'var(--surface)', padding: '24px', borderRadius: '12px',
+              border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
+              display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start'
+            }}>
+            <div style={{ padding: '12px', backgroundColor: 'var(--surface-muted)', borderRadius: '8px', color: card.color }}>
+              <card.icon size={24} />
+            </div>
+            <h3 style={{ fontSize: '16px', margin: 0 }}>{card.title}</h3>
+          </motion.div>
+        ))}
+      </section>
+
+      {/* Statistics */}
+      <section style={{ 
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', 
+        backgroundColor: 'var(--border)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' 
+      }}>
+        {[
+          { icon: Bot, stat: '6', label: 'Specialised Agents' },
+          { icon: Server, stat: '4', label: 'Simulated Data Sources' },
+          { icon: FileDigit, stat: '12', label: 'Months Financial History' },
+          { icon: Cpu, stat: '1', label: 'End-to-End Explainable Trace' }
+        ].map((item, i) => (
+          <div key={i} style={{ backgroundColor: 'var(--surface)', padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <item.icon size={24} style={{ color: 'var(--text-muted)' }} />
+            <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--idbi-teal-dark)' }}>{item.stat}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.label}</div>
+          </div>
+        ))}
       </section>
 
       <footer style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid var(--border)', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>

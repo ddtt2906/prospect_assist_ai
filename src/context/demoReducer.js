@@ -16,7 +16,7 @@ export const initialState = {
   rmActions: [],
   feedbackOutcome: null,
   tourState: { run: false, stepIndex: 0 },
-  aiMode: "Demo AI",
+  aiMode: "Live Groq",
   groqModel: "llama-3.3-70b-versatile"
 };
 

@@ -14,34 +14,14 @@ export default function CustomerSimulatorPage() {
 
   const timeline = customer?.behaviouralTimeline || [];
   
-  useEffect(() => {
-    // If we switch customers, reset simulation state
-    setCurrentEventIndex(state.events.length);
-    setIsPlaying(false);
-  }, [state.selectedCustomerId, state.events.length]);
-
-  useEffect(() => {
-    let timer;
-    if (isPlaying && currentEventIndex < timeline.length) {
-      const delay = (700 / playbackSpeed);
-      timer = setTimeout(() => {
-        const evt = timeline[currentEventIndex];
-        trackEvent(evt.eventType, evt.properties);
-        setCurrentEventIndex(prev => prev + 1);
-      }, delay);
-    } else if (currentEventIndex >= timeline.length && isPlaying) {
-      setIsPlaying(false);
-      toast.success('Simulation completed');
-    }
-    return () => clearTimeout(timer);
-  }, [isPlaying, currentEventIndex, timeline, playbackSpeed, trackEvent]);
-
   const handlePlay = () => {
     if (currentEventIndex >= timeline.length) {
       dispatch({ type: 'CLEAR_EVENTS' });
-      setCurrentEventIndex(0);
     }
-    setIsPlaying(true);
+    // Load all events instantly
+    timeline.forEach(evt => trackEvent(evt.eventType, evt.properties));
+    setCurrentEventIndex(timeline.length);
+    toast.success('Simulation completed');
   };
 
   const handleClear = () => {

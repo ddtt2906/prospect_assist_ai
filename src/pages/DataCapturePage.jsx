@@ -88,12 +88,20 @@ export default function DataCapturePage() {
               
               <div style={{ marginTop: 'auto', display: 'flex', gap: '12px' }}>
                 {isConnected ? (
-                  <button onClick={() => handleDisconnect(c.id)} style={{
-                    padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500,
-                    backgroundColor: 'var(--surface-muted)', border: '1px solid var(--border)', color: 'var(--text-secondary)'
-                  }}>
-                    Disconnect
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', width: '100%', alignItems: 'center' }}>
+                    <button onClick={() => handleDisconnect(c.id)} style={{
+                      padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500,
+                      backgroundColor: 'var(--surface-muted)', border: '1px solid var(--border)', color: 'var(--text-secondary)'
+                    }}>
+                      Disconnect
+                    </button>
+                    <div style={{ padding: '8px 12px', borderRadius: '6px', fontSize: '11px', backgroundColor: '#1e1e1e', color: '#4caf50', border: '1px solid var(--border)', flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                      {c.id === 'clickstream' && '{"events": 142, "last": "page_view"}'}
+                      {c.id === 'coreBanking' && '{"txns": 850, "balance": 45000}'}
+                      {c.id === 'creditProfile' && '{"score": 750, "loans": 2}'}
+                      {c.id === 'accountAggregator' && '{"banks": 2, "txns": 320}'}
+                    </div>
+                  </div>
                 ) : (
                   <button onClick={() => handleConnect(c.id)} style={{
                     padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500,
